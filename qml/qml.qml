@@ -2,339 +2,400 @@ import QtQuick 2.3
 import QtQuick.Controls 1.2
 import QtQuick.Window 2.2
 import QtQuick.Layouts 1.1
+import io.thp.pyotherside 1.3
 
 ApplicationWindow {
     title: qsTr("Hello World i3float")
     id: mainWindow
-    width: 320
+    width: 460
     height: 640
-    color: "#222222"
-
+    color: "black"
+    property bool menu_shown: false
+    /* this rectangle contains the "menu" */
     Rectangle {
-        z: 2
-        id: menuPanel
-        height: menuWrapper.height + 2 * 4
-        anchors.top: parent.top
-        width: parent.width
-        anchors.left: parent.left
-        anchors.topMargin: -menuPanel.height
-        color: "#ceeb2f"
-        state: "hiddenLeft"
-
-        states: [
-            State {
-                name: "hiddenTop"
-                PropertyChanges { target: menuPanel; anchors.topMargin: -menuPanel.height; }
-                PropertyChanges { target: topPanel; anchors.topMargin: 0; }
-                //PropertyChanges { target: topPanel; anchors.top: mainWindow.top }
-            },
-            State {
-                name: "hiddenLeft"
-                PropertyChanges { target: menuPanel; width: 200; height: parent.height - topPanel.height; anchors.topMargin: topPanel.height; anchors.leftMargin: -menuPanel.width }
-            },
-            State {
-                name: "top"
-                PropertyChanges { target: menuPanel; width: parent.width; anchors.topMargin: 0; anchors.leftMargin: 0 }
-                PropertyChanges { target: topPanel; anchors.topMargin: menuPanel.height; }
-                //PropertyChanges { target: topPanel; anchors.top: menuPanel.bottom }
-            },
-            State {
-                name: "left"
-                PropertyChanges { target: menuPanel; width: 200; anchors.leftMargin: 0; }
+        id: menuView
+        anchors.fill: parent
+        color: "#303030";
+        opacity: mainWindow.menu_shown ? 1 : 0
+        Behavior on opacity { NumberAnimation { duration: 300 } }
+        /* this is my sample menu content (TODO: replace with your own) */
+        ListView {
+            anchors { fill: parent; margins: 22 }
+            model: ListModel {
+                ListElement {
+                    label: "Scan"
+                    source: "ScanPage"
+                }
+                ListElement {
+                    label: "Map"
+                    source: "MapPage"
+                }
             }
-        ]
+            spacing: 2
+            delegate: Rectangle {
+                height: 40;
+                width: parent.width - 44;
+                color: "#AAA"
 
-        transitions: [
-            Transition {
-                from: "hiddenTop"; to: "top"
-                NumberAnimation { properties: "anchors.topMargin"; duration: 300 }
-                NumberAnimation { target: topPanel; properties: "anchors.topMargin"; duration: 300 }
-            },
-            Transition {
-                from: "top"; to: "hiddenTop"
-                NumberAnimation { properties: "anchors.topMargin"; duration: 300 }
-                NumberAnimation { target: topPanel; properties: "anchors.topMargin"; duration: 300 }
-            },
-            Transition {
-                from: "hiddenLeft"; to: "left"
-                NumberAnimation { properties: "anchors.leftMargin"; duration: 300 }
-            },
-            Transition {
-                from: "left"; to: "hiddenLeft"
-                NumberAnimation { properties: "anchors.leftMargin"; duration: 300 }
-            }
-        ]
-
-        Rectangle {
-            id: menuWrapper
-            anchors.fill: parent
-            anchors.top: parent.top
-            anchors.margins: 4
-            height: 4 * 34
-            color: "#ceeb2f"
-
-            ListView {
-                id: menuList
-                width: parent.width
-                anchors.fill: parent
-                spacing: 4
-                height: menuList.count * (30 + 4)
-
-                model: ListModel {
-                    ListElement {
-                        ssid: "Wifi List"
-                    }
-                    ListElement {
-                        ssid: "Signal Map"
-                    }
-                    ListElement {
-                        ssid: "Compass"
-                    }
-                    ListElement {
-                        ssid: "About"
-                    }
+                Text {
+                    anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
+                    color: "white";
+                    font.pixelSize: 25;
+                    text: label
                 }
 
-                delegate: Rectangle {
-                    width: menuList.width
-                    implicitHeight: 30
-                    color: "#333"
-                    Text {
-                        text: ssid
-
-                        anchors.fill: parent
-                        anchors.margins: parent.height / 10 + 2
-                        font.pixelSize: 50
-                        fontSizeMode: Text.VerticalFit
-                        color: "#deed8a"
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        console.log("Loading " + source);
+                        normalView.currentPage = source
+                        mainWindow.onMenu();
                     }
                 }
             }
         }
     }
-
+    /* this rectangle contains the "normal" view in your app */
     Rectangle {
-        z: 2
-        id: topPanel
+        id: normalView
+        anchors.fill: parent
+        color: "#333"
+        /* this is what moves the normal view aside */
+        transform: Translate {
+            id: normalViewTranslate
+            x: 0
+            Behavior on x { NumberAnimation { duration: 400; easing.type: Easing.OutQuad } }
+        }
 
-        color: "#222222"
-
-        anchors.top: parent.top
-        width: parent.width
-        height: Math.min(parent.height / 64 + 20, 30)
-
+        /* quick and dirty menu "button" for this demo (TODO: replace with your own) */
         Rectangle {
-            id: menuButton
-            color: "#ceeb2f"
+            id: topPanel
 
-            height: parent.height
-            width: menuLabel.paintedWidth + menuLabel.anchors.margins * 2
-            anchors.left: parent.left
+            color: "#222222"
+            width: parent.width
+            height: Math.min(parent.height / 64 + 25, 40)
 
-            Text {
-                id: menuLabel
-                text: "Menu"
-
-                color: "#111111"
-
-                anchors.fill: parent
-                anchors.margins: parent.height / 10 + 2
-                font.pixelSize: 50
-                fontSizeMode: Text.VerticalFit
+//            id: menu_bar_
+            anchors.top: parent.top
+            Rectangle {
+                id: menu_button_
+                anchors {left: parent.left; verticalCenter: parent.verticalCenter; margins: 2 }
+                color: "white"; implicitWidth: menuLabel.width; height: parent.height - 2; smooth: true
+                scale: ma_.pressed ? 1.2 : 1
+                Text { id: menuLabel; anchors.centerIn: parent; anchors.margins: 10; font.pixelSize: 48; fontSizeMode: Text.VerticalFit; text: "Menu" }
+                MouseArea { id: ma_; anchors.fill: parent; onClicked: mainWindow.onMenu(); }
             }
+        }
 
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    if (menuPanel.state == "hiddenLeft")
-                        menuPanel.state = "left"
-                    else
-                        menuPanel.state = "hiddenLeft"
+        //Put the name of the QML files containing your pages (without the '.qml')
+        property variant pagesList  : [
+            "ScanPage",
+            "MapPage"
+        ];
+
+        // Set this property to another file name to change page
+        property string  currentPage : "MapPage";
+
+        Repeater {
+            model: normalView.pagesList;
+            delegate: Loader {
+                active: false;
+                asynchronous: true;
+                anchors.top: topPanel.bottom
+                anchors { top: topPanel.bottom; bottom: parent.bottom; left: parent.left; right: parent.right; margins: 10 }
+                visible: (normalView.currentPage === modelData);
+                source: "%1.qml".arg(modelData)
+                onVisibleChanged:      { loadIfNotLoaded(); }
+                Component.onCompleted: { loadIfNotLoaded(); }
+
+                function loadIfNotLoaded () {
+                    // to load the file at first show
+                    if (visible && !active) {
+                        active = true;
+                    }
                 }
             }
+        }
+        /* put this last to "steal" touch on the normal window when menu is shown */
+        MouseArea {
+            anchors.fill: parent
+            enabled: mainWindow.menu_shown
+            onClicked: mainWindow.onMenu();
+        }
+
+    }
+    /* this functions toggles the menu and starts the animation */
+    function onMenu()
+    {
+        normalViewTranslate.x = mainWindow.menu_shown ? 0 : mainWindow.width * 0.9
+        mainWindow.menu_shown = !mainWindow.menu_shown;
+    }
+}
+
+
+//ApplicationWindow {
+//    title: qsTr("Hello World i3float")
+//    id: mainWindow
+//    width: 320
+//    height: 640
+//    color: "#222222"
+
+//    property bool menuOpen: false
+
+//    function onMenu()
+//    {
+//        console.log("onMenu()");
+//        game_translate_.x = mainWindow.menuOpen ? 0 : mainWindow.width * 0.9
+//        mainWindow.menuOpen = !mainWindow.menuOpen;
+//    }
+
+//    Rectangle {
+//        //z: 10
+//        id: menuPanel
+//        //height: menuWrapper.height + 2 * 4
+//        anchors.fill: parent
+//        //width: parent.width
+//        //anchors.left: parent.left
+//        //anchors.topMargin: -menuPanel.height
+//        color: "#ceeb2f"
+//        opacity: mainWindow.menuOpen ? 1 : 0
+//        //state: "hiddenLeft"
+
+//        Behavior on opacity { NumberAnimation { duration: 300 } }
+
+//        Rectangle {
+//            id: menuWrapper
+//            anchors.fill: parent
+//            anchors.top: parent.top
+//            anchors.margins: 4
+//            height: 4 * 34
+//            color: "#ceeb2f"
+
+//            ListView {
+//                id: menuList
+//                width: parent.width
+//                anchors.fill: parent
+//                spacing: 4
+//                height: menuList.count * (30 + 4)
+
+//                model: ListModel {
+//                    ListElement {
+//                        ssid: "Wifi List"
+//                    }
+//                    ListElement {
+//                        ssid: "Signal Map"
+//                    }
+//                    ListElement {
+//                        ssid: "Compass"
+//                    }
+//                    ListElement {
+//                        ssid: "About"
+//                    }
+//                }
+
+//                delegate: Rectangle {
+//                    width: menuList.width
+//                    implicitHeight: 30
+//                    color: "#333"
+//                    Text {
+//                        text: ssid
+
+//                        anchors.fill: parent
+//                        anchors.margins: parent.height / 10 + 2
+//                        font.pixelSize: 50
+//                        fontSizeMode: Text.VerticalFit
+//                        color: "#deed8a"
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+//    Rectangle {
+//        id: pageWrapper
+//        anchors.fill: parent
+//        color: "white"
+
+//        // this is what moves the normal view aside
+//        transform: Translate {
+//            id: game_translate_
+//            x: 0
+//            Behavior on x { NumberAnimation { duration: 400; easing.type: Easing.OutQuad } }
+//        }
+
+
+//        Rectangle {
+//            //z: 2
+//            id: topPanel
+
+//            color: "#222222"
+
+//            anchors.top: parent.top
+//            width: parent.width
+//            height: Math.min(parent.height / 64 + 20, 30)
+
 //            Rectangle {
-//                z: 1
+//                id: menuButton
+//                color: "#ceeb2f"
+
+//                height: parent.height
+//                width: menuLabel.paintedWidth + menuLabel.anchors.margins * 2
+//                anchors.left: parent.left
+
+//                Text {
+//                    id: menuLabel
+//                    text: "Menu"
+
+//                    color: "#111111"
+
+//                    anchors.fill: parent
+//                    anchors.margins: parent.height / 10 + 2
+//                    font.pixelSize: 50
+//                    fontSizeMode: Text.VerticalFit
+//                }
+
+//                MouseArea {
+//                    anchors.fill: parent
+//                    /*onClicked: {
+//                    if (menuPanel.state == "hiddenLeft")
+//                        menuPanel.state = "left"
+//                    else
+//                        menuPanel.state = "hiddenLeft"
+//                }*/
+//                    onClicked: function() {
+//                        console.log("test");
+//                    }
+//                }
+
+//                /*Rectangle {
+//                    z: 1
+
+//                    height: parent.height * 2
+//                    width: parent.height
+
+//                    color: parent.parent.color
+//                    anchors.left: parent.right
+//                    anchors.top: parent.top
+
+//                    smooth: true
+//                    transformOrigin: Item.TopLeft
+//                    rotation: 30
+//                }*/
+//            }
+
+//            Rectangle {
+//                color: "transparent"
+
+//                height: parent.height
+//                width: menuLabel.paintedWidth + menuLabel.anchors.margins * 2
+//                anchors.left: menuButton.right
+
+//                Text {
+//                    id: pageLabel
+//                    text: "/ Wifi List"
+
+//                    color: "#deed8a"
+
+//                    anchors.fill: parent
+//                    anchors.margins: parent.height / 10 + 2
+//                    font.pixelSize: 30
+//                    fontSizeMode: Text.VerticalFit
+//                }
+//            }
+
+//            Rectangle {
+//                id: settingsButton
+//                color: "#ceeb2f"
+
+//                height: parent.height
+//                width: height
+//                anchors.right: closeButton.left
+//                anchors.rightMargin: 2
+
+//                Text {
+//                    id: settingsLabel
+//                    text: "S"
+
+//                    color: "#111111"
+
+//                    anchors.fill: parent
+//                    anchors.margins: parent.height / 10 + 2
+//                    horizontalAlignment: Text.Center
+//                    font.pixelSize: 50
+//                    fontSizeMode: Text.VerticalFit
+//                }
+//            }
+
+//            Rectangle {
+//                id: closeButton
+//                color: "#ceeb2f"
+
+//                height: parent.height
+//                width: height
+//                anchors.right: parent.right
+
+//                Text {
+//                    id: closeLabel
+//                    text: "X"
+
+//                    color: "#111111"
+
+//                    anchors.fill: parent
+//                    anchors.margins: parent.height / 10 + 2
+//                    horizontalAlignment: Text.Center
+//                    font.pixelSize: 50
+//                    fontSizeMode: Text.VerticalFit
+//                }
+
+//                /*Rectangle {
+//                z: -1
 
 //                height: parent.height * 2
 //                width: parent.height
 
-//                color: parent.parent.color
-//                anchors.left: parent.right
-//                anchors.top: parent.top
+//                color: parent.color
+//                anchors.left: parent.left
+//                anchors.bottom: parent.bottom
 
 //                smooth: true
-//                transformOrigin: Item.TopLeft
-//                rotation: 30
+//                transformOrigin: Item.BottomLeft
+//                rotation: -30
+//            }*/
 //            }
-        }
+//        }
 
-        Rectangle {
-            color: "transparent"
+//        // Put the name of the QML files containing your pages (without the '.qml')
+//        property variant pagesList  : [
+//            "ScanPage"
+//        ];
 
-            height: parent.height
-            width: menuLabel.paintedWidth + menuLabel.anchors.margins * 2
-            anchors.left: menuButton.right
+//        // Set this property to another file name to change page
+//        property string  currentPage : "ScanPage";
 
-            Text {
-                id: pageLabel
-                text: "/ Wifi List"
+//        Repeater {
+//            model: pageWrapper.pagesList;
+//            delegate: Loader {
+//                active: false;
+//                asynchronous: true;
+//                anchors.fill: parent;
+//                visible: (pageWrapper.currentPage === modelData);
+//                source: "%1.qml".arg(modelData)
+//                onVisibleChanged:      { loadIfNotLoaded(); }
+//                Component.onCompleted: { loadIfNotLoaded(); }
 
-                color: "#deed8a"
+//                function loadIfNotLoaded () {
+//                    // to load the file at first show
+//                    if (visible && !active) {
+//                        active = true;
+//                    }
+//                }
+//            }
+//        }
 
-                anchors.fill: parent
-                anchors.margins: parent.height / 10 + 2
-                font.pixelSize: 30
-                fontSizeMode: Text.VerticalFit
-            }
-        }
-
-        Rectangle {
-            id: settingsButton
-            color: "#ceeb2f"
-
-            height: parent.height
-            width: height
-            anchors.right: closeButton.left
-            anchors.rightMargin: 2
-
-            Text {
-                id: settingsLabel
-                text: "S"
-
-                color: "#111111"
-
-                anchors.fill: parent
-                anchors.margins: parent.height / 10 + 2
-                horizontalAlignment: Text.Center
-                font.pixelSize: 50
-                fontSizeMode: Text.VerticalFit
-            }
-        }
-
-        Rectangle {
-            id: closeButton
-            color: "#ceeb2f"
-
-            height: parent.height
-            width: height
-            anchors.right: parent.right
-
-            Text {
-                id: closeLabel
-                text: "X"
-
-                color: "#111111"
-
-                anchors.fill: parent
-                anchors.margins: parent.height / 10 + 2
-                horizontalAlignment: Text.Center
-                font.pixelSize: 50
-                fontSizeMode: Text.VerticalFit
-            }
-
-            /*Rectangle {
-                z: -1
-
-                height: parent.height * 2
-                width: parent.height
-
-                color: parent.color
-                anchors.left: parent.left
-                anchors.bottom: parent.bottom
-
-                smooth: true
-                transformOrigin: Item.BottomLeft
-                rotation: -30
-            }*/
-        }
-    }
-
-    Rectangle {
-        id: wifiListPage
-        anchors.fill: parent
-        anchors.margins: 10
-        anchors.topMargin: topPanel.height + anchors.margins
-        width: parent.width
-
-        color: "#333333"
-
-        ListView {
-            id: wifiList
-            width: parent.width
-            spacing: 2
-            height: parent.height
-
-            model: ListModel {
-                ListElement {
-                    ssid: "Wifi1"
-                    checked: false
-                }
-                ListElement {
-                    ssid: "Wifi2"
-                    checked: false
-                }
-                ListElement {
-                    ssid: "Wifi3"
-                    checked: false
-                }
-                ListElement {
-                    ssid: "Wifi4"
-                    checked: false
-                }
-                ListElement {
-                    ssid: "Wifi5"
-                    checked: false
-                }
-                ListElement {
-                    ssid: "Wifi6"
-                    checked: false
-                }
-                ListElement {
-                    ssid: "Wifi7"
-                    checked: false
-                }
-                ListElement {
-                    ssid: "Wifi8"
-                    checked: false
-                }
-            }
-
-            delegate: Rectangle {
-                width: wifiList.width
-                implicitHeight: mainWindow.height / 64 + 20
-                color: checked ? "#aefb21" : "#334422"
-
-                Text {
-                    text: ssid
-
-                    anchors.fill: parent
-                    anchors.margins: parent.height / 10 + 2
-                    font.pixelSize: 50
-                    fontSizeMode: Text.VerticalFit
-                    color: checked ? "black" : "white"
-                }
-
-                CheckBox {
-                    id: checkBox
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.rightMargin: 10
-                    checked: model.checked
-                }
-
-                MouseArea {
-                    id: mouseArea
-                    anchors.fill: parent
-                    onClicked: {
-                        var item = wifiList.model.get(index);
-                        item.checked = !item.checked;
-                    }
-                }
-            }
-
-            populate: Transition {
-                NumberAnimation { properties: "x,y"; duration: 400; easing.type: Easing.OutBounce }
-            }
-        }
-    }
-}
+//        MouseArea {
+//            anchors.fill: parent
+//            enabled: mainWindow.menuOpen
+//            onClicked: mainWindow.onMenu();
+//        }
+//    }
+//}
