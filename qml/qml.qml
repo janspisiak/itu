@@ -7,8 +7,8 @@ import io.thp.pyotherside 1.3
 ApplicationWindow {
     title: qsTr("Hello World i3float")
     id: mainWindow
-    width: 460
-    height: 640
+    width: 720
+    height: 860
     color: "black"
     property bool menu_shown: false
     /* this rectangle contains the "menu" */
