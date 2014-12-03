@@ -16,9 +16,6 @@ ApplicationWindow {
     Rectangle {
         id: menuView
         anchors.fill: parent
-        border.color: "black"
-        border.width: 2
-        radius: 10
         //color: "#303030";
 
         gradient: Gradient {
@@ -200,7 +197,7 @@ ApplicationWindow {
     /* this functions toggles the menu and starts the animation */
     function onMenu()
     {
-        normalViewTranslate.x = mainWindow.menu_shown ? 0 : mainWindow.width * 0.3
+        normalViewTranslate.x = mainWindow.menu_shown ? 0 : Math.min(Math.max(mainWindow.width * 0.3, 200), 250)
         mainWindow.menu_shown = !mainWindow.menu_shown;
     }
 }
