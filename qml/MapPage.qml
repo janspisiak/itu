@@ -1,71 +1,63 @@
 import QtQuick 2.3
 import QtQuick.Controls 1.2
 
-Flickable {
-    id: mapPage
-    clip:true
-    width: parent.width
-    height: parent.height
-    anchors.fill: parent
-    anchors.margins: 0
-    contentWidth: mapPage2.width
-    contentHeight: mapPage2.height
-  //  var wifiX, wifiY;
-    Image {
-        id: mapPage2
-        //fillMode:  Image.PreserveAspectFit
-        scale:  1.0
-        //PreserveAspectFit
-        //PreserveAspectCrop
-        //width: parent.width;
-        //height: parent.height;
-        //width: 450;
-        //height: 490;
-        source: "map1fl.png"
-        smooth: true
-        width: parent.width;
-                height: parent.height;
-        MouseArea {
+Rectangle {
+	id: mapPage
+	anchors.fill: parent
+	color: "#333"
 
-                anchors.fill: parent
-                drag.target: mapPage2
+	Flickable {
+		id: mapImageFrame
+		clip:true
+		width: mapImage.width
+		height: mapImage.height
+		anchors.fill: parent
+		//anchors.margins: 0
+		contentWidth: mapImage.width * mapImage.scale
+		contentHeight: mapImage.height * mapImage.scale
+		boundsBehavior: Flickable.DragAndOvershootBounds
 
-               // drag.minimumY:  -100
-               // drag.maximumY: -mapPage2.height + parent.height
-               // drag.minimumX: 0
-                //drag.maximumX: mapPage.width - mapPage2.width
-                //mapPage.width - mapPage2.width
-                acceptedButtons: Qt.LeftButton //| Qt.RightButton
-                drag.axis: Drag.XAndYAxis
+		Image {
+			id: mapImage
+			fillMode: Image.PreserveAspectFit
+			source: "map1fl.png"
+			smooth: true
+			y: height * (scale - 1) / 2
+			x: width * (scale - 1) / 2
 
-                onWheel: {
-                    console.log("!",mapPage2.x/mapPage2.scale );
-                    var scaleM = mapPage2.scale + mapPage2.scale * wheel.angleDelta.y / 120 / 10;
-                    if(scaleM < 5)
-                        mapPage2.scale = (scaleM < 1 ) ? 1 : scaleM;
-                }
+			property double markScale: 1.0
 
-                onClicked: {
+			MouseArea {
+				anchors.fill: parent
+				acceptedButtons: Qt.LeftButton //| Qt.RightButton
 
-                    if (mouse.button == Qt.LeftButton)
-                    {
-                        youMark.x = mouse.x -15
-                        youMark.y = mouse.y -33
-                        //wifiX = mouse.x
-                       // wifiY = mouse.y
-                        youMark.visible = true
-                    }
-                }
-        }
+				onWheel: {
+					var newScale = mapImage.scale + mapImage.scale * wheel.angleDelta.y / 120 / 10;
+					mapImage.scale = (newScale < 1) ? 1 : newScale;
+					mapImage.markScale -= mapImage.markScale * wheel.angleDelta.y / 2400 ;
+					mapImage.markScale = (mapImage.markScale > 1) ? 1 : mapImage.markScale;
+					//mapImageFrame.returnToBounds();
+				}
 
+				onClicked: {
+					if (mouse.button == Qt.LeftButton) {
+						console.log(mouse.x, youMark.width, mapImage.markScale / mapImage.scale)
+						youMark.x = mouse.x - youMark.width * mapImage.markScale / mapImage.scale
+						youMark.y = mouse.y// - youMark.height * (1 - mapImage.markScale)
+						//console.log(youMark.x, youMark.y);
+						youMark.visible = true
+					}
+				}
+			}
 
-        Image {
-            id: youMark
-            width: 30;
-            height:35;
-            visible:false;
-            source: "you.png"
-            mipmap: true
-        }
-     }
+			Image {
+				id: youMark
+				width: 30;
+				height:35;
+				scale: mapImage.markScale
+				source: "you.png"
+				mipmap: true
+			}
+		}
+	}
 }
