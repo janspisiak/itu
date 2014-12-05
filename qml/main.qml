@@ -7,12 +7,15 @@ import io.thp.pyotherside 1.3
 ApplicationWindow {
     title: qsTr("Wi-Fi locator")
     id: mainWindow
+
     width: 720
     height: 860
     color: "black"
-    property bool menu_shown: false
-    /* this rectangle contains the "menu" */
 
+    property bool menu_shown: false
+    property string mapSource: "map/FIT VUT/map1.png" //default map
+
+    /* this rectangle contains the "menu" */
     Rectangle {
         id: menuView
         anchors.fill: parent
@@ -22,11 +25,11 @@ ApplicationWindow {
         //color: "#303030";
 
         gradient: Gradient {
-            GradientStop { position: 0.0
-            color: "#11A6D4"
+            GradientStop { position: 0.2;
+            color: "#09556D"
             }
-            GradientStop { position: 1
-            color: "#04A6BF"
+            GradientStop { position: 1.0;
+            color: "#06061B"
             }
         }
         Image {
@@ -35,12 +38,14 @@ ApplicationWindow {
             width: 200;
             height:200;
             x: 10
-            source: "wifi-logo.png"
+            source: "img/wifi-logo.png"
             smooth: true
         }
         opacity: mainWindow.menu_shown ? 1 : 0
+
         Behavior on opacity { NumberAnimation { duration: 300 } }
-        /* this is my sample menu content (TODO: replace with your own) */
+
+        /* this is my sample menu content */
         ListView {
             anchors { fill: parent; margins: 5;  topMargin: parent.height/3; }
             model: ListModel {
@@ -50,21 +55,16 @@ ApplicationWindow {
                 }
                 ListElement {
                     label: "Choose Map"
-                    source: "MapPage"
+                    source: "chooseMap"
                 }
                 ListElement {
                     label: "Map"
                     source: "MapPage"
                 }
                 ListElement {
-                    label: "Tutorial"
-                    source: "MapPage"
-                }
-                ListElement {
                     label: "About"
-                    source: "MapPage"
+                    source: "About"
                 }
-
             }
             spacing: 0
 
@@ -80,26 +80,26 @@ ApplicationWindow {
                     color: "#747c82"
                     }
                     GradientStop { position: 1
-                    color: "#233a47"
+                    color: "#233a47"//06061B better?????????
                     }
                 }
                 border.color: "black"
                 border.width: 1
                 //border.top: 0
                // radius: 1
+
                 Text {
                     anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
                     color: "white";
                     font.pixelSize: 20;
                     text: label;
                     font.bold: true;
-
                 }
 
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        console.log("Loading " + source);
+                        //console.log("Loading " + source);
                         normalView.currentPage = source
                         mainWindow.onMenu();
                     }
@@ -111,7 +111,16 @@ ApplicationWindow {
     Rectangle {
         id: normalView
         anchors.fill: parent
-        color: "#11A6D4"
+        color: "#09556D"
+
+        gradient: Gradient {
+            GradientStop { position: 0.2
+            color: "#09556D"
+            }
+            GradientStop { position: 1.0
+            color: "#06061B"
+            }
+        }
         /* this is what moves the normal view aside */
 
         transform: Translate {
@@ -127,6 +136,7 @@ ApplicationWindow {
             color:parent.color
             width: parent.width
             height: Math.min(parent.height / 64 + 25, 40)
+
              x: 15
 
 //            id: menu_bar_
@@ -139,7 +149,7 @@ ApplicationWindow {
                     height:40;
                    // x: 15
 
-                    source: "arrow.png"
+                    source: "img/arrow.png"
                     smooth: true
                 }
                 anchors {left: parent.left; verticalCenter: parent.verticalCenter; margins: 2 }
@@ -147,7 +157,6 @@ ApplicationWindow {
                 scale: ma_.pressed ? 1.2 : 1
                // border.color: "black"
                // border.width: 2
-
 
                // Text { id: menuLabel; anchors.centerIn: parent; anchors.margins: 10; font.pixelSize: 48; fontSizeMode: Text.VerticalFit; text: "" }
                 MouseArea { id: ma_; anchors.fill: parent; onClicked: mainWindow.onMenu(); }
@@ -157,7 +166,9 @@ ApplicationWindow {
         //Put the name of the QML files containing your pages (without the '.qml')
         property variant pagesList  : [
             "ScanPage",
-            "MapPage"
+            "chooseMap",
+            "MapPage",
+            "About"
         ];
 
         // Set this property to another file name to change page
@@ -169,7 +180,7 @@ ApplicationWindow {
                 active: false;
                 asynchronous: true;
                 anchors.top: topPanel.bottom
-                anchors { top: topPanel.bottom; bottom: parent.bottom; left: parent.left; right: parent.right; }
+                anchors { top: topPanel.bottom; bottom: parent.bottom; rightMargin: 20; leftMargin: 20; bottomMargin: 20;left: parent.left; right: parent.right; }
                 visible: (normalView.currentPage === modelData);
                 source: "%1.qml".arg(modelData)
                 onVisibleChanged:      { loadIfNotLoaded(); }
@@ -197,10 +208,11 @@ ApplicationWindow {
         }
 
     }
+
     /* this functions toggles the menu and starts the animation */
     function onMenu()
     {
-        normalViewTranslate.x = mainWindow.menu_shown ? 0 : mainWindow.width * 0.3
+        normalViewTranslate.x = mainWindow.menu_shown ? 0 : Math.min(Math.max(mainWindow.width * 0.3, 200), 250)
         mainWindow.menu_shown = !mainWindow.menu_shown;
     }
 }
