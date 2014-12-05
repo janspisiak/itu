@@ -65,6 +65,10 @@ ApplicationWindow {
                     label: "About"
                     source: "About"
                 }
+                ListElement {
+                    label: "Quit"
+                    source: "Quit"
+                }
             }
             spacing: 0
 
@@ -142,21 +146,33 @@ ApplicationWindow {
 //            id: menu_bar_
             anchors.top: parent.top
             Rectangle {
-                id: menu_button_
+                id: menu_button
                 Image {
-                    id: menuLabel
-                    width: 40;
-                    height:40;
+                    id: menuIcon
+                    width: 25;
+                    height:25;
                    // x: 15
+                    anchors.verticalCenter: parent.verticalCenter
 
-                    source: "img/arrow.png"
+                    source: "img/home.png"
                     smooth: true
                 }
+                Text{
+                    id: menuLabel
+                    text : "Menu"
+                    anchors.left: menuIcon.right
+                    anchors.leftMargin: 5
+                    anchors.verticalCenter: parent.verticalCenter
+                    font.pixelSize: 20;
+                    font.bold: true;
+                    color: "white"
+                }
                 anchors {left: parent.left; verticalCenter: parent.verticalCenter; margins: 2 }
-                color: parent.color; implicitWidth: menuLabel.width; height: parent.height ; smooth: true
+                color: parent.color; implicitWidth: menuIcon.width + menuLabel.width; height: parent.height ; smooth: true
                 scale: ma_.pressed ? 1.2 : 1
                // border.color: "black"
                // border.width: 2
+
 
                // Text { id: menuLabel; anchors.centerIn: parent; anchors.margins: 10; font.pixelSize: 48; fontSizeMode: Text.VerticalFit; text: "" }
                 MouseArea { id: ma_; anchors.fill: parent; onClicked: mainWindow.onMenu(); }
@@ -168,7 +184,8 @@ ApplicationWindow {
             "ScanPage",
             "chooseMap",
             "MapPage",
-            "About"
+            "About",
+            "Quit"
         ];
 
         // Set this property to another file name to change page

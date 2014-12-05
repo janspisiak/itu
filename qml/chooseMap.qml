@@ -94,7 +94,7 @@ Rectangle {
                 anchors {
                     right: parent.right; verticalCenter: parent.verticalCenter; margins: 10
                 }
-                implicitWidth: menuLabel.width; height: parent.height ; smooth: true
+                implicitWidth: backLabel.width; height: parent.height ; smooth: true
                 scale: ma_.pressed ? 1.2 : 1
                 MouseArea { id: ma_; anchors.fill: parent;
                     onClicked:
