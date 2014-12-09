@@ -32,21 +32,26 @@ Rectangle {
         }
     }
 
+	function onRefresh() {
+		py.importModule('wifi', function() {
+			py.call('wifi.scan', [], function (result) {
+				wifiListModel.clear();
+				for (var i = 0; i < result.length; i++) {
+					result[i].checked = false;
+					wifiListModel.append(result[i]);
+				}
+			});
+		});
+	}
+
     Python {
         id: py
         Component.onCompleted: {
             addImportPath(Qt.resolvedUrl('.'));
-            importModule('wifi', function() {
-                py.call('wifi.scan', [], function (result) {
-                    console.log(result);
-                    for (var i = 0; i < result.length; i++) {
-                        result[i].checked = false;
-                        wifiListModel.append(result[i]);
-                    }
-                });
-            });
+			scanPage.onRefresh();
         }
     }
+
     Rectangle {
         id: wifiListHeader
         height: baseControlHeight
@@ -104,23 +109,48 @@ Rectangle {
                 color: wifiListHeader.textColor
             }
         }
-        Rectangle {
-            id: selectButtonHeader
-            height: parent.height
-            width: Math.max(parent.parent.width / 8, label.implicitWidth + height)
+		Rectangle {
+			id: selectButtonHeader
+			height: parent.height
+			width: Math.max(parent.parent.width / 8, label.implicitWidth + height)
 
-            //color: checked ? Qt.lighter(wifiListHeader.mainColor, 4) : wifiListHeader.mainColor
-            color: "transparent"
-            anchors.right: parent.right
+			color: hover ? wifiListHeader.mainColor : Qt.darker(wifiListHeader.mainColor, 3)
+			//color: "transparent"
+			anchors.right: parent.right
 
-            Text {
-                id: label;
-                text: "Select"
-                anchors.centerIn: parent
-                color: wifiListHeader.textColor
-                font.pixelSize: baseFontHeight
-            }
-        }
+			property bool hover: selectButtonHeaderMouseArea.containsMouse
+
+			Text {
+				id: label;
+				text: "Refresh"
+				anchors.centerIn: parent
+				color: wifiListHeader.textColor
+				font.pixelSize: baseFontHeight
+			}
+			Rectangle {
+				anchors.bottom: parent.bottom
+				width: parent.width
+				height: parent.height / 10
+				color: Qt.lighter(parent.color, 2)
+			}
+			Rectangle {
+				height: parent.height
+				width: parent.width
+				gradient: Gradient {
+					GradientStop { position: 0.0; color: "white" }
+					GradientStop { position: 1.0; color: "black" }
+				}
+				opacity: parent.hover ? 0.08 : 0.04
+			}
+			MouseArea {
+				id: selectButtonHeaderMouseArea
+				anchors.fill: parent
+				hoverEnabled: true
+				onClicked: {
+					scanPage.onRefresh();
+				}
+			}
+		}
     }
     ListView {
         id: wifiList
@@ -154,13 +184,13 @@ Rectangle {
                     GradientStop { position: 0.0; color: "white" }
                     GradientStop { position: 1.0; color: "black" }
                 }
-                opacity: checked ? 0.06 : 0.02
+				opacity: checked ? 0.06 : mouseArea.containsMouse ? 0.04 : 0.02
             }
 
             Rectangle {
                 width: 8
                 height: parent.height
-                color: Qt.lighter(blueColor, checked ? 6 : 2)
+                color: Qt.lighter(blueColor, checked ? 6 : mouseArea.containsMouse ? 4 : 2)
             }
             RowLayout {
                 height: parent.height
@@ -197,11 +227,11 @@ Rectangle {
                 height: parent.height
                 width: Math.max(parent.parent.width / 8, label2.implicitWidth + height)
 
-                color: checked ? Qt.lighter(blueColor, 4) : blueColor
+                color: Qt.lighter(blueColor, checked ? 4 : mouseArea.containsMouse ? 2 : 0)
                 anchors.right: parent.right
 
                 Text {
-                    id: label2;
+                    id: label2
                     text: "Select"
                     anchors.centerIn: parent
                     color: "white"
@@ -222,17 +252,18 @@ Rectangle {
                     }
                     opacity: checked ? 0.08 : 0.04
                 }
-                MouseArea {
+                /*MouseArea {
                     anchors.fill: parent
                     onClicked: {
                         var item = wifiList.model.get(index);
                         item.checked = !item.checked;
                     }
-                }
+				}*/
             }
             MouseArea {
                 id: mouseArea
                 anchors.fill: parent
+				hoverEnabled: true
 
                 onClicked: {
                     var item = wifiList.model.get(index);

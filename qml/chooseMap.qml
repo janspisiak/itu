@@ -136,8 +136,7 @@ Rectangle {
             detailShown: false
 
             /* Click on the whole row */
-            MouseArea
-            {
+            MouseArea {
                 anchors.fill: parent
                 onClicked:
                 {
@@ -147,8 +146,9 @@ Rectangle {
                     else if(Qt.LeftButton == mouse.button && fileName.substring(0,3) == "map")
                     {
                         folderModel.folder = "map/";
-                        mainWindow.onMenu();
                         mainWindow.mapSource = "map/" + location + "/" + fileName;
+                        //mainWindow.onMenu();
+						normalView.currentPage = "MapPage";
                     }
                 }
             }
@@ -280,6 +280,7 @@ Rectangle {
                 /* Click on the button. If folder - go inside, if file - load new map */
                 MouseArea {
                     anchors.fill: parent
+					hoverEnabled: true
                     onClicked: {
                         if(Qt.LeftButton == mouse.button && fileName.substring(0,3) != "map")
                             folderModel.folder  += "/" + fileName;
@@ -287,10 +288,9 @@ Rectangle {
                         else if(Qt.LeftButton == mouse.button && fileName.substring(0,3) == "map")
                         {
                             folderModel.folder = "map/";
-                            mainWindow.onMenu();
                             mainWindow.mapSource = "map/" + location + "/" + fileName;
-
-                           // normalView.currentPage = "MapPage.qml";
+                            //mainWindow.onMenu();
+                            normalView.currentPage = "MapPage";
                          }
                     }
                 }
